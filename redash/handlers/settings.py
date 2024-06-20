@@ -1,9 +1,26 @@
+import logging
+from logging.handlers import RotatingFileHandler
 from flask import request
-
 from redash.handlers.base import BaseResource
 from redash.models import Organization, db
 from redash.permissions import require_admin
 from redash.settings.organization import settings as org_settings
+
+
+# Create a logger object
+logger = logging.getLogger('redash_audit')
+logger.setLevel(logging.INFO)
+
+# Create a file handler
+handler = RotatingFileHandler('/var/log/redash/audit.log', maxBytes=10000000, backupCount=5)
+handler.setLevel(logging.INFO)
+
+# Create a logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(handler)
 
 
 def get_settings_with_defaults(defaults, org):
