@@ -1,6 +1,6 @@
 import unicodedata
 from urllib.parse import quote
-
+import logging
 import regex
 from flask import make_response, request
 from flask_login import current_user
@@ -35,6 +35,8 @@ from redash.utils import (
     json_dumps,
     to_filename,
 )
+
+logger = logging.getLogger('redash_audit')
 
 
 def error_response(message, http_status=400):
@@ -96,6 +98,8 @@ def run_query(query, parameters, data_source, query_id, should_apply_auto_limit,
             "parameters": parameters,
         },
     )
+    
+    logger.info(f"User {current_user.id} executed query with ID {query_id} on data source {data_source.id}")
 
     if query_result:
         return {"query_result": serialize_query_result(query_result, current_user.is_api_user())}
@@ -177,6 +181,8 @@ class QueryResultListResource(BaseResource):
 
         if not has_access(data_source, self.current_user, not_view_only):
             return error_messages["no_permission"]
+        
+        logger.info(f"User {self.current_user.id} requested execution of query {query_id} on data source {data_source.id}")
 
         return run_query(
             parameterized_query,
