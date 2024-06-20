@@ -1,13 +1,25 @@
 import logging
+from logging.handlers import RotatingFileHandler
 from flask import request
 from redash.handlers.base import BaseResource
 from redash.models import Organization, db
 from redash.permissions import require_admin
 from redash.settings.organization import settings as org_settings
 
-# Set up logging
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+# Create a logger object
+logger = logging.getLogger('redash_audit')
+logger.setLevel(logging.INFO)
+
+# Create a file handler
+handler = RotatingFileHandler('/var/log/redash/audit.log', maxBytes=10000000, backupCount=5)
+handler.setLevel(logging.INFO)
+
+# Create a logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(handler)
 
 def get_settings_with_defaults(defaults, org):
     values = org.settings.get("settings", {})
@@ -31,7 +43,6 @@ class OrganizationSettings(BaseResource):
     @require_admin
     def get(self):
         settings = get_settings_with_defaults(org_settings, self.current_org)
-        logger.info(f"User {self.current_user.id} accessed settings for organization {self.current_org.id}")
         return {"settings": settings}
 
     @require_admin
@@ -53,6 +64,9 @@ class OrganizationSettings(BaseResource):
         db.session.add(self.current_org)
         db.session.commit()
 
+        # Log the settings change
+        logger.info(f"User {self.current_user.id} updated settings for organization {self.current_org.id}: {new_values}")
+
         self.record_event(
             {
                 "action": "edit",
@@ -62,9 +76,6 @@ class OrganizationSettings(BaseResource):
                 "previous_values": previous_values,
             }
         )
-        
-        logger.info(f"User {self.current_user.id} updated settings for organization {self.current_org.id}: {new_values}")
 
         settings = get_settings_with_defaults(org_settings, self.current_org)
-
         return {"settings": settings}
