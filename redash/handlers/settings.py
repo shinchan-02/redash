@@ -1,3 +1,4 @@
+import os
 import logging
 from logging.handlers import RotatingFileHandler
 from flask import request
@@ -6,12 +7,17 @@ from redash.models import Organization, db
 from redash.permissions import require_admin
 from redash.settings.organization import settings as org_settings
 
+LOG_DIR = '/app/logs'  # Example directory within the container
+LOG_FILE = os.path.join(LOG_DIR, 'audit.log')
+os.makedirs(LOG_DIR, exist_ok=True)
+
+
 # Create a logger object
 logger = logging.getLogger('redash_audit')
 logger.setLevel(logging.INFO)
 
 # Create a file handler
-handler = RotatingFileHandler('/var/log/redash/audit.log', maxBytes=10000000, backupCount=5)
+handler = RotatingFileHandler(LOG_FILE, maxBytes=10000000, backupCount=5)
 handler.setLevel(logging.INFO)
 
 # Create a logging format
