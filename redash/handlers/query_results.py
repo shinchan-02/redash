@@ -36,7 +36,7 @@ from redash.utils import (
     to_filename,
 )
 
-logger = logging.getLogger('redash_audit')
+audit_logger = logging.getLogger('redash_audit')
 
 
 def error_response(message, http_status=400):
@@ -99,7 +99,7 @@ def run_query(query, parameters, data_source, query_id, should_apply_auto_limit,
         },
     )
     
-    logger.info(f"User {current_user.id} executed query with ID {query_id} on data source {data_source.id}")
+    audit_logger.info(f"User {current_user} executed query --> [  {query_text} ] on data source {data_source}")
 
     if query_result:
         return {"query_result": serialize_query_result(query_result, current_user.is_api_user())}
@@ -182,7 +182,7 @@ class QueryResultListResource(BaseResource):
         if not has_access(data_source, self.current_user, not_view_only):
             return error_messages["no_permission"]
         
-        logger.info(f"User {self.current_user.id} requested execution of query {query_id} on data source {data_source.id}")
+        audit_logger.info(f"User {self.current_user} requested execution of query --> [ {query_text} ] on data source {data_source}")
 
         return run_query(
             parameterized_query,
