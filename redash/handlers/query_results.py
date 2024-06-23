@@ -36,10 +36,7 @@ from redash.utils import (
     to_filename,
 )
 
-from redash.worker import get_job_logger
-
-audit_logger = get_job_logger(__name__)
-
+audit_logger = logging.getLogger('redash_audit')
 
 def error_response(message, http_status=400):
     return {"job": {"status": 4, "error": message}}, http_status
@@ -112,7 +109,7 @@ def run_query(query, parameters, data_source, query_id, should_apply_auto_limit,
             current_user.id,
             current_user.is_api_user(),
             metadata={
-                "Username": current_user.get_actual_user(),
+                "Username": current_user.email,
                 "query_id": query_id,
             },
         )
@@ -184,7 +181,7 @@ class QueryResultListResource(BaseResource):
         if not has_access(data_source, self.current_user, not_view_only):
             return error_messages["no_permission"]
         
-        audit_logger.info(f"User {self.current_user} requested execution of query --> [ {query_text} ] on data source {data_source}")
+        audit_logger.info(f"User {self.current_user} requested execution of query --> [ {query_id} ] on data source {data_source}")
 
         return run_query(
             parameterized_query,
