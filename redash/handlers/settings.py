@@ -13,8 +13,8 @@ os.makedirs(LOG_DIR, exist_ok=True)
 
 
 # Create a logger object
-logger = logging.getLogger('redash_audit')
-logger.setLevel(logging.INFO)
+audit_logger = logging.getLogger('redash_audit')
+audit_logger.setLevel(logging.INFO)
 
 # Create a file handler
 handler = RotatingFileHandler(LOG_FILE, maxBytes=10000000, backupCount=5)
@@ -25,7 +25,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 
 # Add the handlers to the logger
-logger.addHandler(handler)
+audit_logger.addHandler(handler)
 
 def get_settings_with_defaults(defaults, org):
     values = org.settings.get("settings", {})
