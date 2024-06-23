@@ -36,7 +36,9 @@ from redash.utils import (
     to_filename,
 )
 
-audit_logger = logging.getLogger('redash_audit')
+from redash.worker import get_job_logger
+
+audit_logger = get_job_logger(__name__)
 
 
 def error_response(message, http_status=400):
