@@ -117,9 +117,9 @@ class BaseQueryRunner:
     deprecated = False
     should_annotate_query = True
     noop_query = None
-    limit_query = " LIMIT 1000"
+    limit_query = " LIMIT 10000"
     limit_keywords = ["LIMIT", "OFFSET"]
-    limit_after_select = False
+    limit_after_select = True
 
     def __init__(self, configuration):
         self.syntax = "sql"
